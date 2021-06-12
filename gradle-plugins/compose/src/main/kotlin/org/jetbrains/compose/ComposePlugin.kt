@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 internal val composeVersion get() = ComposeBuildConfig.composeVersion
+internal val jbComposeVersion get() = "0.0.12-SNAPSHOT"
 
 class ComposePlugin : Plugin<Project> {
     override fun apply(project: Project) {
@@ -149,7 +150,7 @@ class ComposePlugin : Plugin<Project> {
         val macos = macos_x64
 
         val currentOs by lazy {
-            composeDependency("org.jetbrains.compose.desktop:desktop-jvm-${currentTarget.id}")
+            jbComposeDependency("org.jetbrains.compose.desktop:desktop-jvm-${currentTarget.id}")
         }
     }
 
@@ -175,3 +176,4 @@ fun DependencyHandler.compose(groupWithArtifact: String) = composeDependency(gro
 val DependencyHandler.compose get() = ComposePlugin.Dependencies
 
 private fun composeDependency(groupWithArtifact: String) = "$groupWithArtifact:$composeVersion"
+private fun jbComposeDependency(groupWithArtifact: String) = "$groupWithArtifact:$jbComposeVersion"
