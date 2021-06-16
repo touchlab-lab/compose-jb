@@ -16,3 +16,7 @@ build/
 /captures
 .externalNativeBuild
 .cxx
+.cxx
+xcuserdata/
+web/darwin-example/DarwinExample/DarwinExample.xcworkspace
+web/darwin-example/DarwinExample/Pods
