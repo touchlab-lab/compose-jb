@@ -6,12 +6,12 @@ plugins {
 }
 
 kotlin {
-//    val onPhone = System.getenv("SDK_NAME")?.startsWith("iphoneos") ?: false
-//    if (onPhone) {
-//        iosArm64("darwin")
-//    } else {
+   val onPhone = System.getenv("SDK_NAME")?.startsWith("iphoneos") ?: false
+   if (onPhone) {
+       iosArm64("darwin")
+   } else {
         iosX64("darwin")
-//    }
+   }
     jvm()
 
     // iosX64("darwin") {

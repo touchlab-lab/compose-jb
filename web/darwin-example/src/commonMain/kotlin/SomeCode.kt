@@ -1,5 +1,6 @@
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.common.foundation.layout.Column
+import org.jetbrains.compose.common.foundation.layout.Row
 import org.jetbrains.compose.common.material.Text
 import org.jetbrains.compose.common.ui.Modifier
 import org.jetbrains.compose.common.ui.padding
@@ -9,8 +10,19 @@ object SomeCode {
     @Composable
     internal fun HelloWorld() {
 //        TooLong()
-        TooShort()
+//         TooShort()
 //        SomeConstraints()
+
+        Column {
+            repeat(200) { row ->
+                Row {
+                    Text("$row: ")
+                    repeat(50) { column ->
+                        Text("$column ")
+                    }
+                }
+            }
+        }
     }
 
     @Composable

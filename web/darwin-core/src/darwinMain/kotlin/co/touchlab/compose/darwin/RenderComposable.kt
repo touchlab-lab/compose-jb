@@ -9,12 +9,13 @@ import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.snapshots.ObserverHandle
 import androidx.compose.runtime.snapshots.Snapshot
 import co.touchlab.compose.darwin.RootUIKitWrapper
-import co.touchlab.compose.darwin.UIControlWrapper
 import co.touchlab.compose.darwin.UIKitApplier
 import co.touchlab.compose.darwin.UIKitWrapper
 import co.touchlab.compose.darwin.UIViewWrapper
+import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.convert
+import kotlinx.cinterop.useContents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -22,18 +23,34 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.GlobalSnapshotManager.ensureStarted
 import platform.CoreGraphics.CGRectMake
+import platform.CoreGraphics.CGSize
+import platform.CoreGraphics.CGSizeMake
+import platform.UIKit.NSLayoutConstraint
 import platform.UIKit.UIButton
-import platform.UIKit.UIColor
 import platform.UIKit.UIControlEventTouchUpInside
-import platform.UIKit.UIControlStateNormal
-import platform.UIKit.UILabel
 import platform.UIKit.UILayoutConstraintAxisHorizontal
 import platform.UIKit.UILayoutConstraintAxisVertical
+import platform.UIKit.UILayoutPriorityDefaultHigh
+import platform.UIKit.UILayoutPriorityRequired
 import platform.UIKit.UIStackView
 import platform.UIKit.UIView
+import platform.UIKit.bottomAnchor
+import platform.UIKit.constraints
+import platform.UIKit.constraintsAffectingLayoutForAxis
+import platform.UIKit.leadingAnchor
+import platform.UIKit.removeConstraints
 import platform.UIKit.removeFromSuperview
+import platform.UIKit.setContentHuggingPriority
+import platform.UIKit.setFrame
+import platform.UIKit.setNeedsLayout
 import platform.UIKit.subviews
+import platform.UIKit.topAnchor
+import platform.UIKit.trailingAnchor
+import platform.UIKit.translatesAutoresizingMaskIntoConstraints
 import platform.objc.sel_registerName
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.properties.Delegates
 
 interface UIViewScope<out TView : UIView>
 
@@ -190,16 +207,153 @@ class UIStackViewWrapper(override val view: UIStackView): UIKitWrapper<UIStackVi
     }
 }
 
+class VStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
+    var spacing by Delegates.observable(0.0) { _, _, _ ->
+        reapplyConstraints()
+    }
+
+    private var managedConstraints = emptyList<NSLayoutConstraint>()
+
+    override fun insert(index: Int, nodeWrapper: UIKitWrapper<*>) {
+        super.insert(index, nodeWrapper)
+
+        nodeWrapper.view.translatesAutoresizingMaskIntoConstraints = false
+        nodeWrapper.view.setContentHuggingPriority(UILayoutPriorityRequired, UILayoutConstraintAxisHorizontal)
+        nodeWrapper.view.setContentHuggingPriority(UILayoutPriorityRequired, UILayoutConstraintAxisVertical)
+
+        reapplyConstraints()
+    }
+
+    override fun remove(index: Int, count: Int) {
+        super.remove(index, count)
+
+        reapplyConstraints()
+    }
+
+    override fun move(from: Int, to: Int, count: Int) {
+        super.move(from, to, count)
+
+        reapplyConstraints()
+    }
+
+    private fun reapplyConstraints() {
+        // We want to store these so they don't change during computation.
+        val immutableSpacing = spacing
+        val subviews = view.subviews.filterIsInstance<UIView>()
+
+        view.removeConstraints(managedConstraints)
+
+        val constraints = mutableListOf<NSLayoutConstraint>()
+        for (index in view.subviews.indices) {
+            val current = subviews[index]
+            val next = subviews.getOrNull(index + 1)
+
+            constraints.add(
+                current.leadingAnchor.constraintEqualToAnchor(view.leadingAnchor)
+            )
+
+            constraints.add(
+                current.trailingAnchor.constraintEqualToAnchor(view.trailingAnchor)
+            )
+
+            if (index == 0) {
+                constraints.add(
+                    current.topAnchor.constraintEqualToAnchor(view.topAnchor)
+                )
+            }
+
+            constraints.add(
+                if (next != null) {
+                    next.topAnchor.constraintEqualToAnchor(current.bottomAnchor, immutableSpacing)
+                } else {
+                    current.bottomAnchor.constraintEqualToAnchor(view.bottomAnchor).apply {
+                        priority = UILayoutPriorityDefaultHigh
+                    }
+                }
+            )
+        }
+        constraints.forEach { it.setActive(true) }
+        managedConstraints = constraints
+    }
+}
+
+class HStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
+    var spacing by Delegates.observable(0.0) { _, _, _ ->
+        reapplyConstraints()
+    }
+
+    private var managedConstraints = emptyList<NSLayoutConstraint>()
+
+    override fun insert(index: Int, nodeWrapper: UIKitWrapper<*>) {
+        super.insert(index, nodeWrapper)
+
+        nodeWrapper.view.translatesAutoresizingMaskIntoConstraints = false
+        nodeWrapper.view.setContentHuggingPriority(UILayoutPriorityRequired, UILayoutConstraintAxisHorizontal)
+        nodeWrapper.view.setContentHuggingPriority(UILayoutPriorityRequired, UILayoutConstraintAxisVertical)
+
+        reapplyConstraints()
+    }
+
+    override fun remove(index: Int, count: Int) {
+        super.remove(index, count)
+
+        reapplyConstraints()
+    }
+
+    override fun move(from: Int, to: Int, count: Int) {
+        super.move(from, to, count)
+
+        reapplyConstraints()
+    }
+
+    private fun reapplyConstraints() {
+        // We want to store these so they don't change during computation.
+        val immutableSpacing = spacing
+        val subviews = view.subviews.filterIsInstance<UIView>()
+
+        view.removeConstraints(managedConstraints)
+
+        val constraints = mutableListOf<NSLayoutConstraint>()
+        for (index in view.subviews.indices) {
+            val current = subviews[index]
+            val next = subviews.getOrNull(index + 1)
+
+            constraints.add(
+                current.topAnchor.constraintEqualToAnchor(view.topAnchor)
+            )
+
+            constraints.add(
+                current.bottomAnchor.constraintEqualToAnchor(view.bottomAnchor)
+            )
+
+            if (index == 0) {
+                constraints.add(
+                    current.leadingAnchor.constraintEqualToAnchor(view.leadingAnchor)
+                )
+            }
+
+            constraints.add(
+                if (next != null) {
+                    next.leadingAnchor.constraintEqualToAnchor(current.trailingAnchor, immutableSpacing)
+                } else {
+                    current.trailingAnchor.constraintEqualToAnchor(view.trailingAnchor).apply {
+                        priority = UILayoutPriorityDefaultHigh
+                    }
+                }
+            )
+        }
+        constraints.forEach { it.setActive(true) }
+        managedConstraints = constraints
+    }
+}
 @Composable
 fun VStack(spacing: Double = 0.0, content: @Composable () -> Unit) {
-    ComposeNode<UIStackViewWrapper, UIKitApplier>(
+    ComposeNode<VStackViewWrapper, UIKitApplier>(
         factory = {
-            UIStackViewWrapper(UIStackView().apply {
-                axis = UILayoutConstraintAxisVertical
-            })
+            VStackViewWrapper(UIView())
         },
         update = {
-            set(spacing) { value -> view.spacing = value }
+            set(spacing) { value -> this.spacing = value }
         },
         content = content,
     )
@@ -207,14 +361,12 @@ fun VStack(spacing: Double = 0.0, content: @Composable () -> Unit) {
 
 @Composable
 fun HStack(spacing: Double = 0.0, content: @Composable () -> Unit) {
-    ComposeNode<UIStackViewWrapper, UIKitApplier>(
+    ComposeNode<HStackViewWrapper, UIKitApplier>(
         factory = {
-            UIStackViewWrapper(UIStackView().apply {
-                axis = UILayoutConstraintAxisHorizontal
-            })
+            HStackViewWrapper(UIView())
         },
         update = {
-            set(spacing) { value -> view.spacing = value }
+            set(spacing) { value -> this.spacing = value }
         },
         content = content,
     )
