@@ -92,10 +92,6 @@ class UIControlWrapper<TControl: UIControl>(override val view: TControl): UIKitW
             onClick()
         }
 
-        override fun respondsToSelector(aSelector: COpaquePointer?): Boolean {
-            return super.respondsToSelector(aSelector)
-        }
-
         fun attach(control: UIControl) {
             control.addTarget(this, clickedPointer, UIControlEventTouchUpInside)
         }
