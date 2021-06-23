@@ -16,6 +16,7 @@ import platform.UIKit.setFrame
 import platform.UIKit.subviews
 import platform.UIKit.topAnchor
 import platform.UIKit.trailingAnchor
+import platform.UIKit.translatesAutoresizingMaskIntoConstraints
 import platform.darwin.NSInteger
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
@@ -119,4 +120,20 @@ class UIViewWrapper<TView : UIView>(override val view: TView): UIKitWrapper<TVie
     }
 }*/
 
-class RootUIKitWrapper(override val view: UIView): UIKitWrapper<UIView>
+class RootUIKitWrapper(override val view: UIView): UIKitWrapper<UIView> {
+    override fun insert(index: Int, nodeWrapper: UIKitWrapper<*>) {
+        super.insert(index, nodeWrapper)
+
+        nodeWrapper.view.apply {
+            translatesAutoresizingMaskIntoConstraints = false
+            listOf(
+                leadingAnchor.constraintEqualToAnchor(view.leadingAnchor),
+                topAnchor.constraintEqualToAnchor(view.topAnchor),
+                trailingAnchor.constraintEqualToAnchor(view.trailingAnchor),
+                bottomAnchor.constraintEqualToAnchor(view.bottomAnchor),
+            ).forEach {
+                it.active = true
+            }
+        }
+    }
+}
