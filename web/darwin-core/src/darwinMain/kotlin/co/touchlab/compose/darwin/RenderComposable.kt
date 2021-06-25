@@ -13,6 +13,7 @@ import androidx.compose.runtime.snapshots.Snapshot
 import co.touchlab.compose.darwin.RootUIKitWrapper
 import co.touchlab.compose.darwin.UIKitApplier
 import co.touchlab.compose.darwin.UIKitWrapper
+import co.touchlab.compose.darwin.internal.castOrCreate
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.ObjCClass
 import kotlinx.cinterop.convert
@@ -45,6 +46,7 @@ import platform.UIKit.UITableViewDelegateProtocol
 import platform.UIKit.UITableViewStyle
 import platform.UIKit.UIView
 import platform.UIKit.bottomAnchor
+import platform.UIKit.layoutMarginsGuide
 import platform.UIKit.leadingAnchor
 import platform.UIKit.removeConstraints
 import platform.UIKit.removeFromSuperview
@@ -257,16 +259,16 @@ class VStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
             val next = subviews.getOrNull(index + 1)
 
             constraints.add(
-                current.leadingAnchor.constraintEqualToAnchor(view.leadingAnchor)
+                current.leadingAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.leadingAnchor)
             )
 
             constraints.add(
-                current.trailingAnchor.constraintEqualToAnchor(view.trailingAnchor)
+                current.trailingAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.trailingAnchor)
             )
 
             if (index == 0) {
                 constraints.add(
-                    current.topAnchor.constraintEqualToAnchor(view.topAnchor)
+                    current.topAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.topAnchor)
                 )
             }
 
@@ -274,7 +276,7 @@ class VStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
                 if (next != null) {
                     next.topAnchor.constraintEqualToAnchor(current.bottomAnchor, immutableSpacing)
                 } else {
-                    current.bottomAnchor.constraintEqualToAnchor(view.bottomAnchor).apply {
+                    current.bottomAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.bottomAnchor).apply {
                         priority = UILayoutPriorityDefaultHigh
                     }
                 }
@@ -327,16 +329,16 @@ class HStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
             val next = subviews.getOrNull(index + 1)
 
             constraints.add(
-                current.topAnchor.constraintEqualToAnchor(view.topAnchor)
+                current.topAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.topAnchor)
             )
 
             constraints.add(
-                current.bottomAnchor.constraintEqualToAnchor(view.bottomAnchor)
+                current.bottomAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.bottomAnchor)
             )
 
             if (index == 0) {
                 constraints.add(
-                    current.leadingAnchor.constraintEqualToAnchor(view.leadingAnchor)
+                    current.leadingAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.leadingAnchor)
                 )
             }
 
@@ -344,7 +346,7 @@ class HStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
                 if (next != null) {
                     next.leadingAnchor.constraintEqualToAnchor(current.trailingAnchor, immutableSpacing)
                 } else {
-                    current.trailingAnchor.constraintEqualToAnchor(view.trailingAnchor).apply {
+                    current.trailingAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.trailingAnchor).apply {
                         priority = UILayoutPriorityDefaultHigh
                     }
                 }
@@ -352,6 +354,24 @@ class HStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
         }
         constraints.forEach { it.setActive(true) }
         managedConstraints = constraints
+    }
+}
+
+class ZStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
+    override fun insert(index: Int, nodeWrapper: UIKitWrapper<*>) {
+        super.insert(index, nodeWrapper)
+
+        nodeWrapper.view.apply {
+            translatesAutoresizingMaskIntoConstraints = false
+            listOf(
+                leadingAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.leadingAnchor),
+                topAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.topAnchor),
+                trailingAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.trailingAnchor),
+                bottomAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.bottomAnchor),
+            ).forEach {
+                it.active = true
+            }
+        }
     }
 }
 
@@ -460,27 +480,49 @@ class UITableViewWrapper<ITEM>(
         error("Doesn't support children.")
     }
 }
+
 @Composable
-fun VStack(spacing: Double = 0.0, content: @Composable () -> Unit) {
+fun VStack(spacing: Double = 0.0, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     ComposeNode<VStackViewWrapper, UIKitApplier>(
         factory = {
             VStackViewWrapper(UIView())
         },
         update = {
             set(spacing) { value -> this.spacing = value }
+            set(modifier) { v ->
+                v.castOrCreate().modHandlers.forEach { block -> block.invoke(view) }
+            }
         },
         content = content,
     )
 }
 
 @Composable
-fun HStack(spacing: Double = 0.0, content: @Composable () -> Unit) {
+fun HStack(spacing: Double = 0.0, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     ComposeNode<HStackViewWrapper, UIKitApplier>(
         factory = {
             HStackViewWrapper(UIView())
         },
         update = {
             set(spacing) { value -> this.spacing = value }
+            set(modifier) { v ->
+                v.castOrCreate().modHandlers.forEach { block -> block.invoke(view) }
+            }
+        },
+        content = content,
+    )
+}
+
+@Composable
+fun ZStack(modifier: Modifier, content: @Composable () -> Unit) {
+    ComposeNode<ZStackViewWrapper, UIKitApplier>(
+        factory = {
+            ZStackViewWrapper(UIView())
+        },
+        update = {
+            set(modifier) { v ->
+                v.castOrCreate().modHandlers.forEach { block -> block.invoke(view) }
+            }
         },
         content = content,
     )

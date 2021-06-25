@@ -1,4 +1,5 @@
 import androidx.compose.runtime.Composable
+import org.jetbrains.compose.common.foundation.layout.Box
 import org.jetbrains.compose.common.foundation.layout.Column
 import org.jetbrains.compose.common.foundation.layout.LazyColumn
 import org.jetbrains.compose.common.foundation.layout.Row
@@ -6,6 +7,7 @@ import org.jetbrains.compose.common.material.Text
 import org.jetbrains.compose.common.ui.Modifier
 import org.jetbrains.compose.common.ui.padding
 import org.jetbrains.compose.common.ui.unit.Dp
+import org.jetbrains.compose.common.ui.unit.dp
 
 object SomeCode {
     @Composable
@@ -26,7 +28,9 @@ object SomeCode {
 
 
         LazyColumn(items = (0..200).map { "Row: $it" }) {
-            Text(it)
+            Box(Modifier.padding(30.dp)) {
+                Text(it)
+            }
         }
     }
 

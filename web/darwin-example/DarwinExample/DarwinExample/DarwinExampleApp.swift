@@ -20,13 +20,6 @@ struct DarwinExampleApp: App {
 }
 
 class RootView: UIView {
-//    override func layoutSubviews() {
-//        super.layoutSubviews()
-//
-//        subviews.forEach { subview in
-//            subview.frame = bounds
-//        }
-//    }
 }
 
 struct ComposableView: UIViewRepresentable {

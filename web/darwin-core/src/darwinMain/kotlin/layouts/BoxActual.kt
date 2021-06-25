@@ -6,6 +6,7 @@ import co.touchlab.compose.darwin.UIKitApplier
 import co.touchlab.compose.darwin.UIViewWrapper
 import co.touchlab.compose.darwin.internal.castOrCreate
 import org.jetbrains.compose.common.ui.Modifier
+import org.jetbrains.compose.web.ZStack
 import platform.UIKit.UILabel
 import platform.UIKit.UIView
 import platform.UIKit.addSubview
@@ -16,18 +17,5 @@ internal actual fun BoxActual(
     modifier: Modifier,
     content: @Composable () -> Unit
 ) {
-    ComposeNode<UIViewWrapper<UIView>, UIKitApplier>(
-        factory = { val view = UIView()
-//            view.sizeToFit()
-            val label = UILabel()
-            label.text = "filler label insides"
-            view.addSubview(label)
-            UIViewWrapper(view) },
-        update = {
-            set(modifier) { v ->
-                v.castOrCreate().modHandlers.forEach { block -> block.invoke(view) }
-            }
-        },
-        content = content
-    )
+    ZStack(modifier, content)
 }
