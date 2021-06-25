@@ -12,5 +12,5 @@ internal actual fun RowActual(
     verticalAlignment: Alignment.Vertical,
     content: @Composable () -> Unit
 ) {
-    HStack(content = content)
+    HStack(modifier = modifier, content = content)
 }

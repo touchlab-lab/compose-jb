@@ -9,5 +9,5 @@ internal actual fun ColumnActual(
     modifier: Modifier,
     content: @Composable () -> Unit
 ) {
-    VStack(content = content)
+    VStack(modifier = modifier, content = content)
 }
