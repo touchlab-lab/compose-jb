@@ -3,6 +3,7 @@ import org.jetbrains.compose.common.foundation.layout.Box
 import org.jetbrains.compose.common.foundation.layout.Column
 import org.jetbrains.compose.common.foundation.layout.LazyColumn
 import org.jetbrains.compose.common.foundation.layout.Row
+import org.jetbrains.compose.common.foundation.layout.ScrollDirection
 import org.jetbrains.compose.common.material.Text
 import org.jetbrains.compose.common.ui.Modifier
 import org.jetbrains.compose.common.ui.padding
@@ -15,23 +16,23 @@ object SomeCode {
 //        TooLong()
 //         TooShort()
 //        SomeConstraints()
-//         Column {
-//             repeat(200) { row ->
-//                 Row {
-//                     Text("$row: ")
-//                     repeat(50) { column ->
-//                         Text("$column ")
-//                     }
-//                 }
-//             }
-//         }
-
-
-        LazyColumn(items = (0..200).map { "Row: $it" }) {
-            Box(Modifier.padding(30.dp)) {
-                Text(it)
+        Column(scrollDirection = ScrollDirection.HORIZONTAL) {
+            repeat(10) { row ->
+                Row {
+                    Text("$row: ")
+                    repeat(50) { column ->
+                        Text("$column ")
+                    }
+                }
             }
         }
+
+
+        // LazyColumn(items = (0..200).map { "Row: $it" }) {
+        //     Box(Modifier.padding(30.dp)) {
+        //         Text(it)
+        //     }
+        // }
     }
 
     @Composable

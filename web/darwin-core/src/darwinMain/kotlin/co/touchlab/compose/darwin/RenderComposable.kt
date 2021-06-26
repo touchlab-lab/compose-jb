@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.common.foundation.layout.ScrollDirection
 import org.jetbrains.compose.common.ui.Modifier
 import org.jetbrains.compose.web.GlobalSnapshotManager.ensureStarted
 import platform.CoreGraphics.CGRectMake
@@ -31,11 +32,13 @@ import platform.Foundation.NSCoder
 import platform.Foundation.NSIndexPath
 import platform.UIKit.NSLayoutConstraint
 import platform.UIKit.UIButton
+import platform.UIKit.UIColor
 import platform.UIKit.UIControlEventTouchUpInside
 import platform.UIKit.UILayoutConstraintAxisHorizontal
 import platform.UIKit.UILayoutConstraintAxisVertical
 import platform.UIKit.UILayoutPriorityDefaultHigh
 import platform.UIKit.UILayoutPriorityRequired
+import platform.UIKit.UIScrollView
 import platform.UIKit.UIStackView
 import platform.UIKit.UITableView
 import platform.UIKit.UITableViewCell
@@ -45,7 +48,11 @@ import platform.UIKit.UITableViewDataSourceProtocol
 import platform.UIKit.UITableViewDelegateProtocol
 import platform.UIKit.UITableViewStyle
 import platform.UIKit.UIView
+import platform.UIKit.addSubview
+import platform.UIKit.backgroundColor
 import platform.UIKit.bottomAnchor
+import platform.UIKit.heightAnchor
+import platform.UIKit.insertSubview
 import platform.UIKit.layoutMarginsGuide
 import platform.UIKit.leadingAnchor
 import platform.UIKit.removeConstraints
@@ -56,6 +63,7 @@ import platform.UIKit.subviews
 import platform.UIKit.topAnchor
 import platform.UIKit.trailingAnchor
 import platform.UIKit.translatesAutoresizingMaskIntoConstraints
+import platform.UIKit.widthAnchor
 import platform.darwin.NSInteger
 import platform.darwin.NSObject
 import platform.darwin.NSObjectMeta
@@ -217,15 +225,29 @@ class UIStackViewWrapper(override val view: UIStackView): UIKitWrapper<UIStackVi
     }
 }
 
-class VStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
+class VStackViewWrapper(private val childrenContainer: UIView): UIKitWrapper<UIView> {
     var spacing by Delegates.observable(0.0) { _, _, _ ->
         reapplyConstraints()
     }
 
+    var scrollDirection: ScrollDirection? by Delegates.observable(null) { _, oldDirection, newDirection ->
+        if (oldDirection != newDirection) {
+            arrangeContainers()
+        }
+    }
+
     private var managedConstraints = emptyList<NSLayoutConstraint>()
 
+    override val view: UIView = UIView()
+    private var scrollView: UIScrollView? = null
+
+    init {
+        childrenContainer.translatesAutoresizingMaskIntoConstraints = false
+        arrangeContainers()
+    }
+
     override fun insert(index: Int, nodeWrapper: UIKitWrapper<*>) {
-        super.insert(index, nodeWrapper)
+        childrenContainer.insertSubview(nodeWrapper.view, index.convert<NSInteger>())
 
         nodeWrapper.view.translatesAutoresizingMaskIntoConstraints = false
         nodeWrapper.view.setContentHuggingPriority(UILayoutPriorityRequired, UILayoutConstraintAxisHorizontal)
@@ -235,40 +257,102 @@ class VStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
     }
 
     override fun remove(index: Int, count: Int) {
-        super.remove(index, count)
+        childrenContainer.subviews.subList(index, index+count).forEach { (it as UIView).removeFromSuperview() }
 
         reapplyConstraints()
     }
 
     override fun move(from: Int, to: Int, count: Int) {
-        super.move(from, to, count)
+        if (from == to) {
+            return // nothing to do
+        }
+
+        val allViews = childrenContainer.subviews.subList(from, from + count).map { it as UIView }
+
+        repeat(count) { vindex ->
+            allViews[vindex].removeFromSuperview()
+        }
+
+        repeat(count) { vindex ->
+            childrenContainer.insertSubview(allViews[vindex], (to + vindex).convert<NSInteger>())
+        }
 
         reapplyConstraints()
+    }
+
+    private fun arrangeContainers() {
+        childrenContainer.removeFromSuperview()
+        scrollView?.removeFromSuperview()
+
+        val scrollDirection = scrollDirection
+
+        if (scrollDirection == null) {
+            scrollView = null
+            view.addSubview(childrenContainer)
+
+            listOf(
+                childrenContainer.leadingAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.leadingAnchor),
+                childrenContainer.topAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.topAnchor),
+                childrenContainer.trailingAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.trailingAnchor),
+                childrenContainer.bottomAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.bottomAnchor).apply {
+                    priority = UILayoutPriorityDefaultHigh
+                },
+            ).forEach { it.active = true }
+        } else {
+            val scrollView = scrollView ?: UIScrollView().apply {
+                backgroundColor = UIColor.clearColor
+                translatesAutoresizingMaskIntoConstraints = false
+            }.also { scrollView = it }
+            view.addSubview(scrollView)
+            scrollView.addSubview(childrenContainer)
+            listOf(
+                scrollView.leadingAnchor.constraintEqualToAnchor(view.leadingAnchor),
+                scrollView.topAnchor.constraintEqualToAnchor(view.topAnchor),
+                scrollView.trailingAnchor.constraintEqualToAnchor(view.trailingAnchor),
+                scrollView.bottomAnchor.constraintEqualToAnchor(view.bottomAnchor),
+            ).forEach { it.active = true }
+
+            when (scrollDirection) {
+                ScrollDirection.HORIZONTAL -> {
+                    childrenContainer.heightAnchor.constraintLessThanOrEqualToAnchor(scrollView.heightAnchor)
+                }
+                ScrollDirection.VERTICAL -> {
+                    childrenContainer.widthAnchor.constraintLessThanOrEqualToAnchor(scrollView.widthAnchor)
+                }
+            }.active = true
+
+            listOf(
+                childrenContainer.leadingAnchor.constraintEqualToAnchor(scrollView.contentLayoutGuide.leadingAnchor),
+                childrenContainer.topAnchor.constraintEqualToAnchor(scrollView.contentLayoutGuide.topAnchor),
+                childrenContainer.trailingAnchor.constraintEqualToAnchor(scrollView.contentLayoutGuide.trailingAnchor),
+                childrenContainer.bottomAnchor.constraintEqualToAnchor(scrollView.contentLayoutGuide.bottomAnchor),
+            ).forEach { it.active = true }
+        }
     }
 
     private fun reapplyConstraints() {
         // We want to store these so they don't change during computation.
         val immutableSpacing = spacing
-        val subviews = view.subviews.filterIsInstance<UIView>()
+        val subviews = childrenContainer.subviews.filterIsInstance<UIView>()
 
-        view.removeConstraints(managedConstraints)
+        childrenContainer.removeConstraints(managedConstraints)
 
         val constraints = mutableListOf<NSLayoutConstraint>()
-        for (index in view.subviews.indices) {
+        for (index in childrenContainer.subviews.indices) {
             val current = subviews[index]
             val next = subviews.getOrNull(index + 1)
 
             constraints.add(
-                current.leadingAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.leadingAnchor)
+                current.leadingAnchor.constraintEqualToAnchor(childrenContainer.layoutMarginsGuide.leadingAnchor)
             )
 
             constraints.add(
-                current.trailingAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.trailingAnchor)
+                current.trailingAnchor.constraintEqualToAnchor(childrenContainer.layoutMarginsGuide.trailingAnchor)
             )
 
             if (index == 0) {
                 constraints.add(
-                    current.topAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.topAnchor)
+                    current.topAnchor.constraintEqualToAnchor(childrenContainer.layoutMarginsGuide.topAnchor)
                 )
             }
 
@@ -276,9 +360,7 @@ class VStackViewWrapper(override val view: UIView): UIKitWrapper<UIView> {
                 if (next != null) {
                     next.topAnchor.constraintEqualToAnchor(current.bottomAnchor, immutableSpacing)
                 } else {
-                    current.bottomAnchor.constraintEqualToAnchor(view.layoutMarginsGuide.bottomAnchor).apply {
-                        priority = UILayoutPriorityDefaultHigh
-                    }
+                    current.bottomAnchor.constraintEqualToAnchor(childrenContainer.layoutMarginsGuide.bottomAnchor)
                 }
             )
         }
@@ -482,13 +564,14 @@ class UITableViewWrapper<ITEM>(
 }
 
 @Composable
-fun VStack(spacing: Double = 0.0, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+fun VStack(spacing: Double = 0.0, modifier: Modifier = Modifier, scrollDirection: ScrollDirection?, content: @Composable () -> Unit) {
     ComposeNode<VStackViewWrapper, UIKitApplier>(
         factory = {
             VStackViewWrapper(UIView())
         },
         update = {
             set(spacing) { value -> this.spacing = value }
+            set(scrollDirection) { direction -> this.scrollDirection = direction }
             set(modifier) { v ->
                 v.castOrCreate().modHandlers.forEach { block -> block.invoke(view) }
             }
