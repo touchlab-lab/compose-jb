@@ -7,7 +7,8 @@ import org.jetbrains.compose.web.VStack
 @Composable
 internal actual fun ColumnActual(
     modifier: Modifier,
+    scrollDirection: ScrollDirection?,
     content: @Composable () -> Unit
 ) {
-    VStack(modifier = modifier, content = content)
+    VStack(modifier = modifier, scrollDirection = scrollDirection, content = content)
 }

@@ -6,5 +6,6 @@ import androidx.compose.runtime.Composable
 @Composable
 fun Column(
     modifier: Modifier = Modifier.Companion,
+    scrollDirection: ScrollDirection? = null,
     content: @Composable () -> Unit
-) { ColumnActual(modifier, content) }
+) { ColumnActual(modifier, scrollDirection, content) }
