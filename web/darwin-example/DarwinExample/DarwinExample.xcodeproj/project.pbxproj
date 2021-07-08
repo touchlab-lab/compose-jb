@@ -107,6 +107,7 @@
 				18566727267A407800CAD33F /* Sources */,
 				18566728267A407800CAD33F /* Frameworks */,
 				18566729267A407800CAD33F /* Resources */,
+				1872C3722696F50D004A616B /* Integrate Reveal Server */,
 			);
 			buildRules = (
 			);
@@ -163,6 +164,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		1872C3722696F50D004A616B /* Integrate Reveal Server */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Integrate Reveal Server";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = " REVEAL_APP_PATH=$(mdfind kMDItemCFBundleIdentifier=\"com.ittybittyapps.Reveal2\" | head -n 1)\n BUILD_SCRIPT_PATH=\"${REVEAL_APP_PATH}/Contents/SharedSupport/Scripts/reveal_server_build_phase.sh\"\n if [ \"${REVEAL_APP_PATH}\" -a -e \"${BUILD_SCRIPT_PATH}\" ]; then\n \"${BUILD_SCRIPT_PATH}\"\n else\n echo \"Reveal Server not loaded: Cannot find a compatible Reveal app.\"\n fi\n";
+		};
 		77EA9CB183754CB5F11F3739 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

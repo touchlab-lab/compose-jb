@@ -7,6 +7,7 @@ import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.ControlledComposition
 import androidx.compose.runtime.DefaultMonotonicFrameClock
 import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.snapshots.ObserverHandle
 import androidx.compose.runtime.snapshots.Snapshot
@@ -14,10 +15,7 @@ import co.touchlab.compose.darwin.RootUIKitWrapper
 import co.touchlab.compose.darwin.UIKitApplier
 import co.touchlab.compose.darwin.UIKitWrapper
 import co.touchlab.compose.darwin.internal.castOrCreate
-import kotlinx.cinterop.ObjCAction
-import kotlinx.cinterop.ObjCClass
-import kotlinx.cinterop.convert
-import kotlinx.cinterop.readValue
+import kotlinx.cinterop.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -26,47 +24,17 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.common.foundation.layout.ScrollDirection
 import org.jetbrains.compose.common.ui.Modifier
 import org.jetbrains.compose.web.GlobalSnapshotManager.ensureStarted
+import platform.CoreFoundation.CFStringRef
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGRectZero
 import platform.Foundation.NSCoder
 import platform.Foundation.NSIndexPath
-import platform.UIKit.NSLayoutConstraint
-import platform.UIKit.UIButton
-import platform.UIKit.UIColor
-import platform.UIKit.UIControlEventTouchUpInside
-import platform.UIKit.UILayoutConstraintAxisHorizontal
-import platform.UIKit.UILayoutConstraintAxisVertical
-import platform.UIKit.UILayoutPriorityDefaultHigh
-import platform.UIKit.UILayoutPriorityRequired
-import platform.UIKit.UIScrollView
-import platform.UIKit.UIStackView
-import platform.UIKit.UITableView
-import platform.UIKit.UITableViewCell
-import platform.UIKit.UITableViewCellMeta
-import platform.UIKit.UITableViewCellStyle
-import platform.UIKit.UITableViewDataSourceProtocol
-import platform.UIKit.UITableViewDelegateProtocol
-import platform.UIKit.UITableViewStyle
-import platform.UIKit.UIView
-import platform.UIKit.addSubview
-import platform.UIKit.backgroundColor
-import platform.UIKit.bottomAnchor
-import platform.UIKit.heightAnchor
-import platform.UIKit.insertSubview
-import platform.UIKit.layoutMarginsGuide
-import platform.UIKit.leadingAnchor
-import platform.UIKit.removeConstraints
-import platform.UIKit.removeFromSuperview
-import platform.UIKit.row
-import platform.UIKit.setContentHuggingPriority
-import platform.UIKit.subviews
-import platform.UIKit.topAnchor
-import platform.UIKit.trailingAnchor
-import platform.UIKit.translatesAutoresizingMaskIntoConstraints
-import platform.UIKit.widthAnchor
+import platform.Foundation.NSString
+import platform.UIKit.*
 import platform.darwin.NSInteger
 import platform.darwin.NSObject
 import platform.darwin.NSObjectMeta
+import platform.darwin.StringPtrVar
 import platform.objc.sel_registerName
 import kotlin.properties.Delegates
 
@@ -567,7 +535,7 @@ class UITableViewWrapper<ITEM>(
 fun VStack(spacing: Double = 0.0, modifier: Modifier = Modifier, scrollDirection: ScrollDirection?, content: @Composable () -> Unit) {
     ComposeNode<VStackViewWrapper, UIKitApplier>(
         factory = {
-            VStackViewWrapper(UIView())
+            VStackViewWrapper(TestView())
         },
         update = {
             set(spacing) { value -> this.spacing = value }
@@ -640,6 +608,18 @@ fun <TView : UIView> renderComposable(
         recomposer.runRecomposeAndApplyChanges()
     }
     return composition
+}
+
+class TestView: UIView(CGRectZero.readValue()) {
+    @ObjCAction
+    fun didMoveToWindow() {
+        println("didMoveToWindow")
+    }
+
+    @ObjCAction
+    fun willMoveToWindow(newWindow: UIWindow?) {
+        println("willMove: $newWindow")
+    }
 }
 
 ///**

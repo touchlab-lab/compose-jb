@@ -1,3 +1,4 @@
+import org.jetbrains.compose.compose
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
 plugins {
@@ -7,12 +8,20 @@ plugins {
 
 kotlin {
    val onPhone = System.getenv("SDK_NAME")?.startsWith("iphoneos") ?: false
-   if (onPhone) {
+   val darwin = if (onPhone) {
        iosArm64("darwin")
    } else {
         iosX64("darwin")
    }
     jvm()
+
+    darwin.binaries {
+        forEach { binary ->
+            if (binary is org.jetbrains.kotlin.gradle.plugin.mpp.Framework) {
+                // binary.export(project(":darwin-core"))
+            }
+        }
+    }
 
     // iosX64("darwin") {
     //     binaries {
@@ -30,10 +39,11 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(compose.runtime)
+                 implementation(compose.foundationLayout)
                 implementation(kotlin("stdlib-common"))
 
                 implementation( "org.jetbrains.kotlinx:kotlinx-coroutines-core") {
-                    version { strictly("1.4.3-native-mt") }
+                    version { strictly("1.5.0-native-mt") }
                 }
             }
         }

@@ -45,11 +45,12 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(compose.runtime)
+                implementation(compose.foundationLayout)
                 implementation(kotlin("stdlib-common"))
                 implementation(project(":darwin-core"))
 
                 implementation( "org.jetbrains.kotlinx:kotlinx-coroutines-core") {
-                    version { strictly("1.4.3-native-mt") }
+                    version { strictly("1.5.0-native-mt") }
                 }
             }
         }

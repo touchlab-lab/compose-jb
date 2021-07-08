@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'darwin_example'
-    spec.version                  = '0.0.12-SNAPSHOT'
+    spec.version                  = '1.1.0-SNAPSHOT'
     spec.homepage                 = 'https://github.com/touchlab/CompilerPluginPlayground'
     spec.source                   = { :git => "Not Published", :tag => "Cocoapods/#{spec.name}/#{spec.version}" }
     spec.authors                  = ''

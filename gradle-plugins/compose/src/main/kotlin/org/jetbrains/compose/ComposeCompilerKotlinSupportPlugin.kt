@@ -31,20 +31,20 @@ class ComposeCompilerKotlinSupportPlugin : KotlinCompilerPluginSupportPlugin {
     }
 
     override fun getPluginArtifact(): SubpluginArtifact =
+        // SubpluginArtifact(
+        //     "app.cash.treehouse",
+        //     "compose-compiler",
+        //     "0.2.0-SNAPSHOT"
+        // )
         SubpluginArtifact(
-            "app.cash.treehouse",
-            "compose-compiler",
-            "0.2.0-SNAPSHOT"
-        )
-        /*SubpluginArtifact(
             groupId = "org.jetbrains.compose.compiler", artifactId = "compiler", version = composeVersion
-        )*/
+        )
 
     override fun getPluginArtifactForNative(): SubpluginArtifact =
         SubpluginArtifact(
-            "app.cash.treehouse",
-            "compose-compiler-hosted",
-            "0.2.0-SNAPSHOT"
+            "org.jetbrains.compose.compiler",
+            "compiler-hosted",
+            composeVersion
         )
 
     private fun isApplicableJsTarget(kotlinTarget: KotlinTarget): Boolean {

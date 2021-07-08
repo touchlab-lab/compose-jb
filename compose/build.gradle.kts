@@ -47,6 +47,30 @@ tasks.register("publishComposeJb") {
     }
 
     listOf(
+        // ":compose:animation:animation",
+        // ":compose:animation:animation-core",
+        // ":compose:foundation:foundation",
+        ":compose:foundation:foundation-layout",
+        // ":compose:material:material",
+        // ":compose:material:material-icons-core",
+        // ":compose:material:material-ripple",
+        ":compose:runtime:runtime",
+        ":compose:runtime:runtime-saveable",
+        ":compose:ui:ui",
+        ":compose:ui:ui-geometry",
+        ":compose:ui:ui-graphics",
+        // ":compose:ui:ui-test",
+        // ":compose:ui:ui-test-junit4",
+        ":compose:ui:ui-text",
+        ":compose:ui:ui-tooling",
+        ":compose:ui:ui-unit",
+        ":compose:ui:ui-util",
+    ).forEach {
+        dependsOnComposeTask("$it:publishIosX64PublicationToMavenRepository")
+        dependsOnComposeTask("$it:publishIosArm64PublicationToMavenRepository")
+    }
+
+    listOf(
         ":compose:runtime:runtime",
     ).forEach {
         dependsOnComposeTask("$it:publishJsPublicationToMavenRepository")

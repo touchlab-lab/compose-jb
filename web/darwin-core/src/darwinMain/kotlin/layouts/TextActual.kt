@@ -10,6 +10,8 @@ import org.jetbrains.compose.common.core.graphics.toUIColor
 import org.jetbrains.compose.common.ui.Modifier
 import org.jetbrains.compose.common.ui.unit.TextUnit
 import platform.UIKit.UILabel
+import platform.UIKit.UIView
+import androidx.compose.ui.platform.UIKitView
 
 @Composable
 actual fun TextActual(
@@ -18,16 +20,14 @@ actual fun TextActual(
     color: Color,
     size: TextUnit
 ) {
-    println("Text showing $text")
-    ComposeNode<UIViewWrapper<UILabel>, UIKitApplier>(
-        factory = { UIViewWrapper(UILabel()) },
-        update = {
-            set(text) { v -> view.text = v }
-            set(color) { v -> view.textColor = v.toUIColor() }
-            set(size) { v -> view.font = view.font.fontWithSize(size.value.toDouble()) }
-            set(modifier) { v ->
-                v.castOrCreate().modHandlers.forEach { block -> block.invoke(view) }
-            }
-        },
+    UIKitView(
+        factory = { UILabel() },
+//        modifier = modifier,
+        update = { label ->
+            label.text = text
+            label.textColor = color.toUIColor()
+            label.font = label.font.fontWithSize(size.value.toDouble())
+//            modifier.castOrCreate().modHandlers.forEach { block -> block.invoke(label) }
+        }
     )
 }

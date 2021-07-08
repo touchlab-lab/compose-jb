@@ -1,14 +1,23 @@
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.Composable
+// import layout.defaults.Column
 import org.jetbrains.compose.common.foundation.layout.Box
-import org.jetbrains.compose.common.foundation.layout.Column
+// import org.jetbrains.compose.common.foundation.layout.Column
 import org.jetbrains.compose.common.foundation.layout.LazyColumn
-import org.jetbrains.compose.common.foundation.layout.Row
+//import org.jetbrains.compose.common.foundation.layout.Row
 import org.jetbrains.compose.common.foundation.layout.ScrollDirection
 import org.jetbrains.compose.common.material.Text
-import org.jetbrains.compose.common.ui.Modifier
+//import org.jetbrains.compose.common.ui.Modifier
 import org.jetbrains.compose.common.ui.padding
 import org.jetbrains.compose.common.ui.unit.Dp
 import org.jetbrains.compose.common.ui.unit.dp
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import org.jetbrains.compose.common.core.graphics.Color
+import org.jetbrains.compose.common.ui.background
 
 object SomeCode {
     @Composable
@@ -16,14 +25,19 @@ object SomeCode {
 //        TooLong()
 //         TooShort()
 //        SomeConstraints()
-        Column(scrollDirection = ScrollDirection.HORIZONTAL) {
+        Column(
+                verticalArrangement = Arrangement.SpaceEvenly,
+                horizontalAlignment = Alignment.CenterHorizontally,
+//                modifier = Modifier.Companion.rotate(20f),
+        ) {
+            Text("Yo")
             repeat(10) { row ->
-                Row {
+                 Row {
                     Text("$row: ")
-                    repeat(50) { column ->
-                        Text("$column ")
-                    }
-                }
+                     repeat(50) { column ->
+                         Text("$column ")
+                     }
+                 }
             }
         }
 
@@ -58,7 +72,7 @@ object SomeCode {
         Column {
             repeat(5) {
                 Text(
-                    modifier = Modifier.padding(Dp(10F)),
+//                    modifier = Modifier.padding(Dp(10F)),
                     text = "Common Row $it"
                 )
             }

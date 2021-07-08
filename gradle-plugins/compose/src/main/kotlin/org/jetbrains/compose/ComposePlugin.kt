@@ -21,7 +21,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 internal val composeVersion get() = ComposeBuildConfig.composeVersion
-internal val jbComposeVersion get() = "0.0.12-SNAPSHOT"
+internal val jbComposeVersion get() = "1.1.0-SNAPSHOT"
 
 class ComposePlugin : Plugin<Project> {
     override fun apply(project: Project) {
@@ -113,8 +113,9 @@ class ComposePlugin : Plugin<Project> {
         val desktop = DesktopDependencies
         val animation get() = composeDependency("org.jetbrains.compose.animation:animation")
         val foundation get() = composeDependency("org.jetbrains.compose.foundation:foundation")
+        val foundationLayout get() = composeDependency("org.jetbrains.compose.foundation:foundation-layout")
         val material get() = composeDependency("org.jetbrains.compose.material:material")
-        val runtime get() = composeDependency("app.cash.treehouse:compose-runtime")
+        val runtime get() = composeDependency("org.jetbrains.compose.runtime:runtime")
         val ui get() = composeDependency("org.jetbrains.compose.ui:ui")
         val uiTooling get() = composeDependency("org.jetbrains.compose.ui:ui-tooling")
         val materialIconsExtended get() = composeDependency("org.jetbrains.compose.material:material-icons-extended")
@@ -150,7 +151,7 @@ class ComposePlugin : Plugin<Project> {
         val macos = macos_x64
 
         val currentOs by lazy {
-            jbComposeDependency("org.jetbrains.compose.desktop:desktop-jvm-${currentTarget.id}")
+            composeDependency("org.jetbrains.compose.desktop:desktop-jvm-${currentTarget.id}")
         }
     }
 

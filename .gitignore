@@ -20,3 +20,4 @@ build/
 xcuserdata/
 web/darwin-example/DarwinExample/DarwinExample.xcworkspace
 web/darwin-example/DarwinExample/Pods
+web/local.properties
