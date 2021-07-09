@@ -1,45 +1,41 @@
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
-// import layout.defaults.Column
-import org.jetbrains.compose.common.foundation.layout.Box
-// import org.jetbrains.compose.common.foundation.layout.Column
-import org.jetbrains.compose.common.foundation.layout.LazyColumn
-//import org.jetbrains.compose.common.foundation.layout.Row
-import org.jetbrains.compose.common.foundation.layout.ScrollDirection
-import org.jetbrains.compose.common.material.Text
-//import org.jetbrains.compose.common.ui.Modifier
-import org.jetbrains.compose.common.ui.padding
-import org.jetbrains.compose.common.ui.unit.Dp
-import org.jetbrains.compose.common.ui.unit.dp
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import org.jetbrains.compose.common.core.graphics.Color
-import org.jetbrains.compose.common.ui.background
+import androidx.compose.ui.unit.ExperimentalUnitApi
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
+import org.jetbrains.compose.common.material.Text
 
 object SomeCode {
+    @OptIn(ExperimentalUnitApi::class)
     @Composable
     internal fun HelloWorld() {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text("Yo")
+            Column(modifier = Modifier.align(Alignment.Center)) {
+                repeat(10) { row ->
+                    Row {
+                        Text("${row + 5}: ")
+                        repeat(5) { column ->
+                            Text("${5 + row + column} ", size = TextUnit(5f + row.toFloat() + column.toFloat(), type = TextUnitType.Unspecified))
+                        }
+                    }
+                }
+            }
+            Text("Okay", modifier = Modifier.align(Alignment.BottomEnd))
+//            Column(
+////                    modifier = Modifier.align(Alignment.BottomEnd)
+//            ) {
+//
+//            }
+        }
 //        TooLong()
 //         TooShort()
 //        SomeConstraints()
-        Column(
-                verticalArrangement = Arrangement.SpaceEvenly,
-                horizontalAlignment = Alignment.CenterHorizontally,
-//                modifier = Modifier.Companion.rotate(20f),
-        ) {
-            Text("Yo")
-            repeat(10) { row ->
-                 Row {
-                    Text("$row: ")
-                     repeat(50) { column ->
-                         Text("$column ")
-                     }
-                 }
-            }
-        }
+
 
 
         // LazyColumn(items = (0..200).map { "Row: $it" }) {

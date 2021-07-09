@@ -1,5 +1,6 @@
 package org.jetbrains.compose.common.core.graphics
 
+import androidx.compose.ui.graphics.Color
 import platform.UIKit.UIColor
 
 fun Color.toUIColor(): UIColor = UIColor(
