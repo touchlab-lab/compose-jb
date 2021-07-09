@@ -1,7 +1,7 @@
 package org.jetbrains.compose.common.material
 
-import org.jetbrains.compose.common.ui.Modifier
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 
 @Composable
 expect fun ButtonActual(

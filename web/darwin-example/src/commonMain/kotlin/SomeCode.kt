@@ -1,16 +1,18 @@
 import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
+import org.jetbrains.compose.common.material.Button
 import org.jetbrains.compose.common.material.Text
 
 object SomeCode {
     @OptIn(ExperimentalUnitApi::class)
     @Composable
     internal fun HelloWorld() {
+        var baseFontSize: Int by mutableStateOf(5)
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -18,11 +20,17 @@ object SomeCode {
             Column(modifier = Modifier.align(Alignment.Center)) {
                 repeat(10) { row ->
                     Row {
-                        Text("${row + 5}: ")
-                        repeat(5) { column ->
-                            Text("${5 + row + column} ", size = TextUnit(5f + row.toFloat() + column.toFloat(), type = TextUnitType.Unspecified))
+                        Text("${row + baseFontSize}: ")
+                        repeat(baseFontSize) { column ->
+                            Text("${baseFontSize + row + column} ", size = TextUnit(baseFontSize.toFloat() + row.toFloat() + column.toFloat(), type = TextUnitType.Unspecified))
                         }
                     }
+                }
+                Button(onClick = { baseFontSize -= 1 }) {
+                    Text("-")
+                }
+                Button(onClick = { baseFontSize += 1 }) {
+                    Text("+")
                 }
             }
             Text("Okay", modifier = Modifier.align(Alignment.BottomEnd))
